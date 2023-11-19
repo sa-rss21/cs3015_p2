@@ -9,16 +9,19 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 
 
-learning_gaps = []
-start = 0
+
 
 def sbs_vbs_gap_scorer(y_true, y_pred):
-  vbs = calculate_vbs(y_true)
-  sbs = calculate_sbs(y_true)
-  cost, gap = evaluate_as_model(y_true, [np.argmin(row) for row in y_pred], vbs, sbs)
-  print(gap, len(learning_gaps)//3)
-  learning_gaps.append(gap)
-  return gap
+    """
+    custom score function used for regression hyper-parameter tuning
+    :param y_true: cost matrix
+    :param y_pred: predicted cost matrix
+    :return:
+    """
+    vbs = calculate_vbs(y_true)
+    sbs = calculate_sbs(y_true)
+    cost, gap = evaluate_as_model(y_true, [np.argmin(row) for row in y_pred], vbs, sbs)
+    return gap
 
 
 def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_grid=None):
@@ -52,25 +55,29 @@ def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_g
     train_performance_data, train_instance_features, test_performance_data, test_instance_features = read_data(data_dir)
     sbs_avg_cost_train, vbs_avg_cost_train, sbs_avg_cost_test, vbs_avg_cost_test = get_vbs_sbs(train_performance_data,
                                                                                                test_performance_data)
-
+    # specify correct targets for classification training
     algo_targets = [np.argmin(row) for row in train_performance_data]
 
     # model pipeline
     pipe = Pipeline([])
+    # custom scorer for regression hyper-parameter tuning
     scorer = make_scorer(score_func=sbs_vbs_gap_scorer, greater_is_better=False)
+    # scale data if specified and depending on the type
     if use_scaler:
         pipe.steps.append(("scale", RobustScaler()))
         if model_type == "classification":
             pipe.steps.append(("scale2", MinMaxScaler()))
+
     pipe.steps.append(("model", model))
     mod = pipe
 
     if model_type == "classification":
-
         mod.fit(train_instance_features, algo_targets)
         predicted_algos = mod.predict(test_instance_features)
         predicted_algos_train = mod.predict(train_instance_features)
+
     elif model_type == "regression":
+        # if a parameter grid is given, run a cross-validated exhaustive search on the model
         if param_grid:
             grid = GridSearchCV(pipe, cv=3, param_grid=param_grid, scoring=scorer)
             grid.fit(train_instance_features, train_performance_data)
@@ -81,18 +88,8 @@ def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_g
         predicted_algos = [np.argmin(row) for row in mod.predict(test_instance_features)]
         predicted_algos_train = [np.argmin(row) for row in mod.predict(train_instance_features)]
 
-    if param_grid and model_type == "regression":
-        plot = plt
-        # Create a plot
-
-        sorted_data = sorted(learning_gaps, reverse=True)
-        plot.plot(sorted_data)
-
-        # Add labels and title (optional)
-        plot.xlabel('Searches')
-        plot.ylabel('Gap')
-        plot.yscale('log')
-        plot.title('learning gap over time')
+    if param_grid:
+        # display cross search if it was done
         results = pd.DataFrame(grid.cv_results_)[['params', 'mean_test_score']]#, 'rank_test_score']]
         results.sort_values('mean_test_score')
         print(results)
