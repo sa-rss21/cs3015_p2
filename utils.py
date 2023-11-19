@@ -103,6 +103,7 @@ def evaluate_as_model(performance_data, predicted_algs, vbs_avg_cost, sbs_avg_co
     """
     # Calculate the average cost of solving instances using the AS model
     l_avg_cost = []
+
     for i, row in enumerate(performance_data):
         l_avg_cost.append(row[predicted_algs[i]])
     avg_cost = np.mean(l_avg_cost)
@@ -110,21 +111,8 @@ def evaluate_as_model(performance_data, predicted_algs, vbs_avg_cost, sbs_avg_co
     # Calculate the SBS-VBS gap of the AS model
     sbs_vbs_gap = (avg_cost - vbs_avg_cost) / (sbs_avg_cost - vbs_avg_cost)
 
-    """
-    # Plot a bar chart to visualize the predicted algorithms selected by the AS model
-    unique_predicted_algs, counts = np.unique(predicted_algs, return_counts=True)
-
-
-    
-    plt.figure(figsize=(10, 6))
-    plt.bar(unique_predicted_algs, counts)
-    plt.xlabel('Algorithm Index')
-    plt.ylabel('Frequency')
-    plt.title('Predicted Algorithms Selected by AS Model')
-    plt.xticks(unique_predicted_algs, [f'Algorithm {i}' for i in unique_predicted_algs])
-    plt.show()
-    """
     return avg_cost, sbs_vbs_gap
+
 
 def plot_model_gaps(model_data, learning_threshold):
     models = list(model_data.keys())
@@ -141,7 +129,6 @@ def plot_model_gaps(model_data, learning_threshold):
     plt.ylabel("Gap Values")
     plt.title("Training and Testing SBS-VBS Gaps")
     plt.xticks(index + bar_width / 2, models)
-
 
     plt.axhline(y=learning_threshold, color='darkgreen', linestyle='--', label="SBS-VBS Learning Threshold")
     plt.legend()
@@ -247,4 +234,22 @@ def plot_metrics(train_metrics, test_metrics, model_name):
     ax.legend()
 
     plt.tight_layout()
+    plt.show()
+
+def plot_learning_curves(training_losses, validation_losses, model_type):
+    """
+    Plot learning curves (training and validation losses).
+
+    Parameters:
+    - training_losses: List of training losses.
+    - validation_losses: List of validation losses.
+    - model_type: Type of the model ("classification" or "regression").
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(training_losses, label='Training Loss')
+    plt.plot(validation_losses, label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.title(f'Learning Curves for {model_type} Hyperparameter Tuning')
     plt.show()

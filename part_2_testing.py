@@ -26,30 +26,34 @@ print(f"sbs_test :{sbs_avg_cost_test:10.2f}, vbs_test :{vbs_avg_cost_test:10.2f}
 
 
 # linear classification
-model = LogisticRegression()
+model = LogisticRegression(max_iter=500, multi_class='auto', C=1.0, fit_intercept=True, solver='newton-cholesky')
 avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "classification", True)
-model_data["Linear\nClassification"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
-model_data_costs["Linear\nClassification"] = (avg_cost_train, avg_cost_test)
-
+model_data["Linear\nClassification\nOptimized"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
+model_data_costs["Linear\nClassification\nOptimized"] = (avg_cost_train, avg_cost_test)
 
 # linear regression
-model = LinearRegression()
-avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "regression", False)
-model_data["Linear\nRegression"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
-model_data_costs["Linear\nRegression"] = (avg_cost_train, avg_cost_test)
-
-
-# neural classification
-model = MLPClassifier(max_iter=500, solver='lbfgs')
-avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "classification", True)
-model_data["Neural\nClassification"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
-model_data_costs["Neural\nClassification"] = (avg_cost_train, avg_cost_test)
-
-# neural regression
-model = MLPRegressor(max_iter=500)
+model = LinearRegression(copy_X=True, fit_intercept=True, n_jobs=2, positive=True)
 avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "regression", True)
-model_data["Neural\nRegression"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
-model_data_costs["Neural\nRegression"] = (avg_cost_train, avg_cost_test)
+model_data["Linear\nRegression\nOptimized"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
+model_data_costs["Linear\nRegression\nOptimized"] = (avg_cost_train, avg_cost_test)
+
+
+model = MLPClassifier(
+    hidden_layer_sizes=(100, 100),
+                      alpha=0.001,
+                          max_iter=1000,
+    early_stopping=True,
+validation_fraction=0.2
+)
+avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "classification", True)
+model_data["Neural\nClassification\nOptimized"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
+model_data_costs["Neural\nClassification\nOptimized"] = (avg_cost_train, avg_cost_test)
+
+
+model = MLPRegressor(max_iter=500, hidden_layer_sizes=(150, 100, 50, 25), learning_rate='adaptive', learning_rate_init=.02)
+avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = train_and_evaluate_as_model(data_dir, model, "regression", True)
+model_data["Neural\nRegression\nOptimized"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
+model_data_costs["Neural\nRegression\nOptimized"] = (avg_cost_train, avg_cost_test)
 
 
 # Plot the performance metrics
