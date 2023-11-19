@@ -61,11 +61,11 @@ print(f"sbs_train:{sbs_avg_cost_train:10.2f}, vbs_train:{vbs_avg_cost_train:10.2
 print(f"sbs_test :{sbs_avg_cost_test:10.2f}, vbs_test :{vbs_avg_cost_test:10.2f}")
 
 
-model = LinearRegression()
+model = MLPRegressor()
 avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = (
-    train_and_evaluate_as_model(data_dir, model, "regression", True, linear_regression_param_grid))
-model_data["Linear\nRegression"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
-model_data_costs["Linear\nRegression"] = (avg_cost_train, avg_cost_test)
+    train_and_evaluate_as_model(data_dir, model, "regression", True, neural_regression_param_grid))
+model_data["Neural\nRegression"] = (sbs_vbs_gap_train, sbs_vbs_gap_test)
+model_data_costs["Neural\nRegression"] = (avg_cost_train, avg_cost_test)
 
 
 # Plot the performance metrics
