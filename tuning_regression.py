@@ -21,11 +21,11 @@ linear_regression_param_grid = {
 
 neural_regression_param_grid = {
     'model__hidden_layer_sizes': [(100,), (200,), (100, 50), (200, 100, 50)],
-    'model__activation': ['identity', 'relu'],
+    'model__activation': ['identity', 'relu', 'tanh'],
     'model__solver': ['lbfgs', 'adam'],
     'model__alpha': [0.0001, 0.001, 0.01, 0.1],
     'model__learning_rate': ['constant', 'adaptive'],
-    'model__max_iter': [500],  # Set the max_iter value to the one that works well
+    'model__max_iter': [200, 500],  # Set the max_iter value to the one that works well
 }
 
 # read data
@@ -37,6 +37,7 @@ model_data_costs = {}
 # get vbs and sbs
 sbs_avg_cost_train, vbs_avg_cost_train, sbs_avg_cost_test, vbs_avg_cost_test = get_vbs_sbs(train_performance_data, test_performance_data)
 
+# Perform exhaustive grid searches on both regression models
 model = MLPRegressor()
 avg_cost_train, sbs_vbs_gap_train, avg_cost_test, sbs_vbs_gap_test = (
     train_and_evaluate_as_model(data_dir, model, "regression", True, neural_regression_param_grid))

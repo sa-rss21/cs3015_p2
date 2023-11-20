@@ -1,14 +1,10 @@
 import numpy as np
-from matplotlib import pyplot as plt
-from sklearn.metrics import make_scorer, average_precision_score, brier_score_loss, balanced_accuracy_score, \
-    accuracy_score, precision_score, roc_auc_score
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from utils import read_data, get_vbs_sbs, evaluate_as_model, calculate_vbs, calculate_sbs
 from sklearn.pipeline import Pipeline
 import pandas as pd
-
-
 
 
 def sbs_vbs_gap_scorer(y_true, y_pred):
@@ -64,7 +60,7 @@ def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_g
     scorer = make_scorer(score_func=sbs_vbs_gap_scorer, greater_is_better=False)
     # scale data if specified and depending on the type
     if use_scaler:
-        pipe.steps.append(("scale", RobustScaler()))
+        pipe.steps.append(("scale", StandardScaler()))
         if model_type == "classification":
             pipe.steps.append(("scale2", MinMaxScaler()))
 
@@ -88,6 +84,7 @@ def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_g
         predicted_algos = [np.argmin(row) for row in mod.predict(test_instance_features)]
         predicted_algos_train = [np.argmin(row) for row in mod.predict(train_instance_features)]
 
+    # grab grid search result data
     if param_grid:
         # display cross search if it was done
         results = pd.DataFrame(grid.cv_results_)[['params', 'mean_test_score']]#, 'rank_test_score']]
@@ -98,6 +95,8 @@ def train_and_evaluate_as_model(data_dir, model, model_type, use_scaler, param_g
 
         # Save the results to a CSV file
         results.to_csv(output_file, index=False)  # Set index=False to exclude the index column
+
+
     avg_cost_test, sbs_vbs_gap_test = evaluate_as_model(test_performance_data, predicted_algos,
                                                         vbs_avg_cost_test, sbs_avg_cost_test)
 

@@ -1,7 +1,6 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 def calculate_vbs(cost_matrix):
@@ -114,7 +113,14 @@ def evaluate_as_model(performance_data, predicted_algs, vbs_avg_cost, sbs_avg_co
     return avg_cost, sbs_vbs_gap
 
 
-def plot_model_gaps(model_data, learning_threshold):
+def plot_model_gaps(model_data, learning_threshold=1):
+    """
+    Plots the gap data for a given dataset
+    :param model_data:
+    :param learning_threshold: usually 1
+    :return:
+    """
+
     models = list(model_data.keys())
     training_gaps = [data[0] for data in model_data.values()]
     testing_gaps = [data[1] for data in model_data.values()]
@@ -138,6 +144,12 @@ def plot_model_gaps(model_data, learning_threshold):
 
 
 def plot_model_costs(model_data, thresholds):
+    """
+    Plots cost data for a given dataset
+    :param model_data:
+    :param thresholds: SBS and VBS costs
+    :return:
+    """
     models = list(model_data.keys())
     training_costs = [data[0] for data in model_data.values()]
     testing_costs = [data[1] for data in model_data.values()]
